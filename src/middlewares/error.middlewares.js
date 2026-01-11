@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { config } from "../config/config.js"
 import { ApiError } from "../utils/ApiError.js";
+import multer from "multer";
 
 
 const errorHandler = (err, req, res, next) => {
@@ -15,12 +16,24 @@ const errorHandler = (err, req, res, next) => {
             stack: config.nodeEnv === "development" ? err.stack : undefined
         });
     }
+
+    // If this is a mongoose validation error
     if (err instanceof mongoose.Error.ValidationError) {
         return res.status(400).json({
             success: false,
             message: "Mongoose validation failed",
             code: "VALIDATION_ERROR",
             details: err.errors,
+            stack: config.nodeEnv === "development" ? err.stack : undefined
+        });
+    }
+    // if this is a multer error
+    if (err instanceof multer.MulterError) {
+        return res.status(400).json({
+            success: false,
+            message: "Multer error",
+            code: "MULTER_ERROR",
+            details: err.message,
             stack: config.nodeEnv === "development" ? err.stack : undefined
         });
     }

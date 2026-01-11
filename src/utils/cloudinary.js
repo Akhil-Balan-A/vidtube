@@ -21,6 +21,7 @@ const uploadOnCloudinary = async (localFilePath, folder="vidtube/upload") => {//
         // Upload the file to Cloudinary
         const response = await cloudinary.uploader.upload(localFilePath, {
             resource_type: 'auto',
+            folder
         });
         console.log("📤 Cloudinary upload success:", response.secure_url);
 
@@ -47,4 +48,21 @@ const uploadOnCloudinary = async (localFilePath, folder="vidtube/upload") => {//
     }
 }
 
-export { uploadOnCloudinary }
+
+const deleteFromCloudinary = async (publicId) => {//default folder fall back storage
+    try {
+        await cloudinary.uploader.destroy(publicId, {
+            resource_type: 'auto',
+        });
+        console.log("📤 Cloudinary delete success:", publicId);
+    } catch (error) {
+        console.error("❌ Cloudinary delete error:", error.message);
+        throw new ApiError(500, "Cloudinary delete error", "DELETE_ERROR", error);
+    }
+}
+
+
+export {
+    uploadOnCloudinary,
+    deleteFromCloudinary
+};

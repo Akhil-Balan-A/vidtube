@@ -1,0 +1,2 @@
+1. Need to check how bearer mobile works with postman for token.
+2. 

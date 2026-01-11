@@ -13,3 +13,4 @@ export const validate = (schema) => (req, res, next) => {
     throw new ApiError(400, "Validation failed", "VALIDATION_ERROR", formatted);
   }
 };
+
