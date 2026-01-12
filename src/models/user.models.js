@@ -31,6 +31,10 @@ const userSchema = new Schema({
         match: [/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/, "Please fill a valid email address"],
         index: true
     },
+    isEmailVerified: {
+        type: Boolean,
+        default: false
+    },
     avatar: {
         type: String, //cloudinary URL
     },
@@ -70,7 +74,7 @@ const userSchema = new Schema({
 
 // password handling if the hook is async dont call next()
 userSchema.pre("save", async function () {
-    if (!this.isModified("password")) {
+    if (!this.isModified("password")) {//if password is not modified then do nothing
         return
     }
     this.password = await bcrypt.hash(this.password, 10);

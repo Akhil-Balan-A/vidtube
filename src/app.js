@@ -36,10 +36,14 @@ logger.info("Server started");
 //import routes
 import healthCheckRouter from "./routes/healthCheck.routes.js";
 import authRouter from "./routes/auth.routes.js";
+import userRouter from "./routes/user.routes.js";
+import emailRouter from "./routes/email.routes.js";
 
 //Routes
 app.use("/api/v1/healthcheck", healthCheckRouter);
 app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/users", userRouter);
+app.use("/api/v1/email", emailRouter);
 
 //Global error handler
 app.use(errorHandler);

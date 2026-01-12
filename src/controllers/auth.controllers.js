@@ -187,7 +187,7 @@ const refreshAccessToken = async (req, res) => {
     const decoded = jwt.verify(incomingRefreshToken, config.refreshTokenSecret);
 
     // Validate user
-    const user = await User.findById(decoded.id);
+    const user = await User.findById(decoded.id).select("+refreshToken");
     if (!user) throw new ApiError(404, "User not found", "USER_NOT_FOUND");
 
     // Compare with DB

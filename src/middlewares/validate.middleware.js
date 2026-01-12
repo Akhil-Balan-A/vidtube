@@ -1,16 +1,17 @@
 import { ApiError } from "../utils/ApiError.js";
 
-export const validate = (schema) => (req, res, next) => {
+export const validate = (schema) => async (req, res, next) => {
   try {
-    schema.parse(req.body);
+    await schema.parseAsync(req.body);
     next();
   } catch (err) {
     const formatted = err.errors?.map(e => ({
-      field: e.path[0],
+      field: e.path.join(".") || e.path[0],
       message: e.message
-    }));
-
-    throw new ApiError(400, "Validation failed", "VALIDATION_ERROR", formatted);
+    })) || null;
+    next(
+      new ApiError(400, "Validation failed", "VALIDATION_ERROR", formatted)
+    );
   }
 };
 

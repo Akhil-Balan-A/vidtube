@@ -12,7 +12,7 @@ export const verifyJWT = (req, res, next) => {
 
   // 2. Mobile apps / Postman (Authorization header)
   if (req.headers.authorization?.startsWith("Bearer ")) {
-    token = req.headers.authorization.split(" ")[1];
+    token = req.headers.authorization?.split(" ")[1];
   }
 
   if (!token) {
@@ -20,11 +20,11 @@ export const verifyJWT = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, config.accessTokenSecret);
-    req.user = decoded;
+    const decoded = jwt.verify(token, config.accessTokenSecret); // in the dcoded data comes from the part where creating jwt we add the user object.
+    req.user = decoded; // here we attach the user object to the request (object inlcude id, username, email)
     next();
   } catch (err) {
-    throw new ApiError(401, "Invalid or expired token", "TOKEN_INVALID");
+    throw new ApiError(401, err?.message || "Invalid or expired token", "TOKEN_INVALID");
   }
 };
 
