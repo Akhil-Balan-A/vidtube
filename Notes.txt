@@ -1,2 +1,5 @@
 1. Need to check how bearer mobile works with postman for token.
 2. add propr email verifications form register, verifyemail, changeemail, resetForgotpassword with email
+3. 
+
+

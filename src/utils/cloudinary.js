@@ -14,14 +14,17 @@ cloudinary.config({
  * Uploads a file to Cloudinary and deletes the local file afterward.
  * Supports images & videos automatically.
  */
-const uploadOnCloudinary = async (localFilePath, folder="vidtube/upload") => {//default folder fall back storage
+const uploadOnCloudinary = async (localFilePath, folder="vidtube") => {//default folder fall back storage
     try {
-        if (!localFilePath) return null;
+        //if no local path throw error
+        if (!localFilePath) {
+            throw new ApiError(400, "File is required", "FILE_REQUIRED");
+        } ;
 
         // Upload the file to Cloudinary
         const response = await cloudinary.uploader.upload(localFilePath, {
             resource_type: 'auto',
-            folder
+            folder: folder // this will make all files uploaded to this folder
         });
         console.log("📤 Cloudinary upload success:", response.secure_url);
 
@@ -49,7 +52,7 @@ const uploadOnCloudinary = async (localFilePath, folder="vidtube/upload") => {//
 }
 
 
-const deleteFromCloudinary = async (publicId) => {//default folder fall back storage
+const deleteFromCloudinary = async (publicId) => {
     try {
         await cloudinary.uploader.destroy(publicId, {
             resource_type: 'auto',

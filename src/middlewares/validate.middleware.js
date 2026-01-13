@@ -1,3 +1,4 @@
+import {z} from "zod";
 import { ApiError } from "../utils/ApiError.js";
 
 export const validate = (schema) => async (req, res, next) => {
@@ -5,13 +6,19 @@ export const validate = (schema) => async (req, res, next) => {
     await schema.parseAsync(req.body);
     next();
   } catch (err) {
-    const formatted = err.errors?.map(e => ({
-      field: e.path.join(".") || e.path[0],
-      message: e.message
-    })) || null;
-    next(
-      new ApiError(400, "Validation failed", "VALIDATION_ERROR", formatted)
-    );
+    if (err instanceof z.ZodError) {
+      // Map through Zod issues to get a clean field-to-message mapping
+      const formattedErrors = err.errors.map((e) => ({
+        field: e.path.join("."),
+        message: e.message,
+      }));
+
+      // Pass the formatted errors to the 'details' parameter of ApiError
+      return next(new ApiError(400, "Validation failed", "VALIDATION_ERROR", formattedErrors));
+    }
+    
+    // Handle non-zod errors
+    next(err);
   }
 };
 
