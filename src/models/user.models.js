@@ -37,6 +37,7 @@ const userSchema = new Schema({
     },
     avatar: {
         type: String, //cloudinary URL
+        required: true
     },
     avatarPublicId: {
         type: String,
@@ -44,9 +45,11 @@ const userSchema = new Schema({
     },
     coverImage: {
         type: String, //cloudinary URL
+        default: null   
     },
     coverImagePublicId: {
         type: String,
+        default: null
     },
     watchHistory: [
         {

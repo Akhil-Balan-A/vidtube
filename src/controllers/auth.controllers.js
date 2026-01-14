@@ -54,7 +54,7 @@ const registerUser = async (req, res) => {
     if (coverImageLocalPath) {
       coverUpload = await uploadOnCloudinary(
         coverImageLocalPath,
-        "vidtube/coverImages"
+        "vidtube/coverImage"
       );
     }
 
@@ -93,40 +93,41 @@ const registerUser = async (req, res) => {
       .status(201)
       .json(new ApiResponse(201, "User created successfully", safeUser));
   } catch (error) {
-    //Rolllback Db on error
+
     await session.abortTransaction();
     session.endSession();
 
-    //Delete uploaded avatar if failure happens after uploading
-    if (avatarUpload?.publicId) {
-      await deleteFromCloudinary(avatarUpload.publicId);
+    // Cleanup block (delete cloud + local)
+    try {
+        if (avatarUpload?.publicId) {
+            await deleteFromCloudinary(avatarUpload.publicId);
+        }
+        if (coverUpload?.publicId) {
+            await deleteFromCloudinary(coverUpload.publicId);
+        }
+    } catch (cleanupErr) {
+        console.error("❌ Cloudinary delete failed:", cleanupErr.message);
     }
 
-    // Delete uploaded cover if failure happens after uploading
-
-    if (coverUpload?.publicId) {
-      await deleteFromCloudinary(coverUpload.publicId);
+    try {
+        if (avatarLocalPath && fs.existsSync(avatarLocalPath)) {
+            fs.unlinkSync(avatarLocalPath);
+        }
+        if (coverImageLocalPath && fs.existsSync(coverImageLocalPath)) {
+            fs.unlinkSync(coverImageLocalPath);
+        }
+    } catch (cleanupErr) {
+        console.error("❌ Local file cleanup failed:", cleanupErr.message);
     }
 
-    // Delete local file if failure happens after uploading
-    
-      if (avatarLocalPath && fs.existsSync(avatarLocalPath)) {
-        console.log("avatarLocalPath - deleted" , avatarLocalPath);
-      fs.unlinkSync(avatarLocalPath);
-    }
-
-      if (coverImageLocalPath && fs.existsSync(coverImageLocalPath)) {
-        console.log("coverImageLocalPath - deleted", coverImageLocalPath);
-      fs.unlinkSync(coverImageLocalPath);
-    }
-    // Throw any other error for global error handler
     throw new ApiError(
       500,
       "User creation error",
       "USER_CREATION_ERROR",
-      error.message
+      error
     );
-  }
+}
+
 };
 const loginUser = async (req, res) => {
   const { email, password } = req.body;

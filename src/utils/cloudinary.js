@@ -54,10 +54,15 @@ const uploadOnCloudinary = async (localFilePath, folder="vidtube") => {//default
 
 const deleteFromCloudinary = async (publicId) => {
     try {
-        await cloudinary.uploader.destroy(publicId, {
-            resource_type: 'auto',
+        if (!publicId) throw new ApiError(400, "Public id is required", "PUBLIC_ID_REQUIRED");
+        //for upload we can use auto but for delete we need to specify what type of file is being deleted
+        const fileInfo = await cloudinary.api.resource(publicId);
+        const resourceType = fileInfo.resource_type; // image or video or row 
+        console.log(resourceType);
+        const response = await cloudinary.uploader.destroy(publicId, {
+            resource_type: resourceType,
         });
-        console.log("📤 Cloudinary delete success:", publicId);
+        console.log("📤 Cloudinary delete success:", publicId,response.result);
     } catch (error) {
         console.error("❌ Cloudinary delete error:", error.message);
         throw new ApiError(500, "Cloudinary delete error", "DELETE_ERROR", error);

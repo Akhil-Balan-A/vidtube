@@ -1,4 +1,4 @@
-import {z} from "zod";
+import { z } from "zod";
 import { ApiError } from "../utils/ApiError.js";
 
 export const validate = (schema) => async (req, res, next) => {
@@ -16,7 +16,7 @@ export const validate = (schema) => async (req, res, next) => {
       // Pass the formatted errors to the 'details' parameter of ApiError
       return next(new ApiError(400, "Validation failed", "VALIDATION_ERROR", formattedErrors));
     }
-    
+
     // Handle non-zod errors
     next(err);
   }
