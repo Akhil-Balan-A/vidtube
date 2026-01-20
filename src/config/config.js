@@ -11,6 +11,10 @@ export const config = {
     refreshTokenExpiry: process.env.REFRESH_TOKEN_EXPIRY,
     cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME,
     cloudinaryApiKey: process.env.CLOUDINARY_API_KEY,
-    cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET 
+    cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET,
+    emailHost: process.env.EMAIL_HOST,
+    emailPort: process.env.EMAIL_PORT,
+    emailUser: process.env.EMAIL_USER,
+    emailPass: process.env.EMAIL_PASS 
 
 };

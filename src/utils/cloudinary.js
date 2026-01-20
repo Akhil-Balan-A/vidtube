@@ -2,6 +2,7 @@ import { v2 as cloudinary } from 'cloudinary'
 import { config } from "../config/config.js";
 import fs from "fs";
 import { ApiError } from "../utils/ApiError.js";
+import { logger } from "../utils/logger.js";
 
 //Config Cloudinary
 cloudinary.config({
@@ -26,7 +27,7 @@ const uploadOnCloudinary = async (localFilePath, folder="vidtube") => {//default
             resource_type: 'auto',
             folder: folder // this will make all files uploaded to this folder
         });
-        console.log("📤 Cloudinary upload success:", response.secure_url);
+        logger.info("📤 Cloudinary upload success:", response.secure_url);
 
         // Delete local file once the files is uploaded
         if (fs.existsSync(localFilePath)) {
@@ -42,7 +43,7 @@ const uploadOnCloudinary = async (localFilePath, folder="vidtube") => {//default
         };
 
     } catch (error) {
-        console.error("❌ Cloudinary upload error:", error.message);
+        logger.error("❌ Cloudinary upload error:", error.message);
         //Delete file if exists
         if (fs.existsSync(localFilePath)) {
             fs.unlinkSync(localFilePath);
@@ -58,13 +59,13 @@ const deleteFromCloudinary = async (publicId) => {
         //for upload we can use auto but for delete we need to specify what type of file is being deleted
         const fileInfo = await cloudinary.api.resource(publicId);
         const resourceType = fileInfo.resource_type; // image or video or row 
-        console.log(resourceType);
+        logger.info("📤 Cloudinary delete success:", publicId, resourceType);
         const response = await cloudinary.uploader.destroy(publicId, {
             resource_type: resourceType,
         });
-        console.log("📤 Cloudinary delete success:", publicId,response.result);
+        logger.info("📤 Cloudinary delete success:", publicId, response.result);
     } catch (error) {
-        console.error("❌ Cloudinary delete error:", error.message);
+        logger.error("❌ Cloudinary delete error:", error.message);
         throw new ApiError(500, "Cloudinary delete error", "DELETE_ERROR", error);
     }
 }

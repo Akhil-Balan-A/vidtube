@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { upload } from "../middlewares/multer.middlewares.js";
-import { getCurrentUser, updateAccountInfo, changeCurrentPassword, updateAvatar, updateCoverImage,deleteAvatar,deleteCoverImage } from "../controllers/user.controllers.js";
+import { getCurrentUser, updateAccountInfo, changeCurrentPassword, updateAvatar, updateCoverImage, deleteAvatar, deleteCoverImage, getUserChannelProfile } from "../controllers/user.controllers.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { verifyJWT } from "../middlewares/auth.middlewares.js";
 import {validate} from "../middlewares/validate.middleware.js";
@@ -16,5 +16,6 @@ userRouter.route("/update-avatar").post(verifyJWT, upload.fields([{ name: "avata
 userRouter.route("/update-cover-image").post(verifyJWT, upload.fields([{ name: "coverImage", maxCount: 1 }]), asyncHandler(updateCoverImage));
 userRouter.route("/delete-cover").delete(verifyJWT,asyncHandler(deleteCoverImage));
 userRouter.route("/delete-avatar").delete(verifyJWT,asyncHandler(deleteAvatar));
+userRouter.route("/channel/:id").get(asyncHandler(getUserChannelProfile));
 export default userRouter;
 

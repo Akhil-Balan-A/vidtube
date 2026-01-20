@@ -1,14 +1,19 @@
 import { User } from "../models/user.models.js";
+import { Subscription } from "../models/subscription.mdoels.js";
+import { Video } from "../models/video.models.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
+import { logger } from "../utils/logger.js";
 import {
   uploadOnCloudinary,
   deleteFromCloudinary,
 } from "../utils/cloudinary.js";
 
 const getCurrentUser = async (req, res) => {
+  const user = await User.findById(req.user.id);
+  if (!user) throw new ApiError(404, "User not found", "USER_NOT_FOUND");
   // get user details
-  return res.status(200).json(new ApiResponse(200, "", req.user));
+  return res.status(200).json(new ApiResponse(200, "User fetched successfully", user));
 };
 const updateAccountInfo = async (req, res) => {
   // update user details like name,fullName,email
@@ -75,14 +80,15 @@ const updateAvatar = async (req, res) => {
     await user.save({ validateBeforeSave: false }); //will save only what is modified
     return res.status(200).json(new ApiResponse(200, "Avatar updated successfully", { user }));
   } catch (error) {
-    console.error("❌ Error updating avatar:", error.message);
+    logger.error("❌ Error updating avatar:", error.message);
     // 1. Delete uploaded Cloudinary avatar if upload succeeded
     try {
       if (avatarUpload?.publicId) {
         await deleteFromCloudinary(avatarUpload.publicId);
       }
     } catch (cleanupErr) {
-      console.error("❌ Cloudinary delete failed:", cleanupErr.message);
+      
+      logger.error("❌ Cloudinary delete failed:", cleanupErr.message);
     }
 
     // 2. Rollback DB if avatar was updated before failure
@@ -93,7 +99,7 @@ const updateAvatar = async (req, res) => {
         await user.save({ validateBeforeSave: false });
       }
     } catch (rollbackErr) {
-      console.error("❌ Failed to rollback user data:", rollbackErr.message);
+      logger.error("❌ Failed to rollback user data:", rollbackErr.message);
     }
     throw new ApiError(500, "Error updating avatar", "UPDATE_AVATAR_ERROR", error);
 
@@ -139,7 +145,9 @@ const updateCoverImage = async (req, res) => {
       .status(200)
       .json(new ApiResponse(200, "Cover image updated successfully", { user }));
   } catch (error) {
-    console.log("❌ Error in updateCoverImage:", error.message)
+    // console.log("❌ Error in updateCoverImage:", error.message)
+    logger.error("❌ Error in updateCoverImage:", error.message);
+
 
     // Cleanup block (delete cloud + local)
     try {
@@ -147,7 +155,7 @@ const updateCoverImage = async (req, res) => {
         await deleteFromCloudinary(coverUpload.publicId);
       }
     } catch (cleanupErr) {
-      console.error("❌ Cloudinary delete failed:", cleanupErr.message);
+      logger.error("❌ Cloudinary delete failed:", cleanupErr.message);
     }
     // Rollack user DB values if user was loaded with image details before error
     try {
@@ -158,8 +166,7 @@ const updateCoverImage = async (req, res) => {
 
       }
     } catch (rollbackErr) {
-      console.error("❌ Failed to rollback user data:", rollbackErr.message);
-
+      logger.error("❌ Failed to rollback user data:", rollbackErr.message);
     }
     throw new ApiError(
       500,
@@ -218,6 +225,57 @@ const deleteCoverImage = async (req, res) => {
     .json(new ApiResponse(200, "Cover image deleted successfully"));
 };
 
+const getUserChannelProfile = async (req, res) => {
+  const { id } = req.params;
+
+  const channelUser = await User.findById(id);
+  if (!channelUser) {
+    throw new ApiError(404, "Channel not found", "CHANNEL_NOT_FOUND");
+  }
+
+  // Get subscriber count
+  const subscriberCount = await Subscription.countDocuments({ channel: id });
+
+  // Get subscribed to count
+  const subscribedToCount = await Subscription.countDocuments({ subscriber: id });
+
+  // Get video count (published videos)
+  const videoCount = await Video.countDocuments({ owner: id, isPublished: true });
+
+  // Check if current user is subscribed to this channel
+  let isSubscribed = false;
+  if (req.user && req.user.id !== id) {
+    const subscription = await Subscription.findOne({
+      subscriber: req.user.id,
+      channel: id,
+    });
+    isSubscribed = !!subscription;
+  }
+
+  // Prepare channel profile data
+  const channelProfile = {
+    _id: channelUser._id,
+    username: channelUser.username,
+    fullName: channelUser.fullName,
+    email: channelUser.email,
+    avatar: channelUser.avatar,
+    coverImage: channelUser.coverImage,
+    isEmailVerified: channelUser.isEmailVerified,
+    createdAt: channelUser.createdAt,
+    updatedAt: channelUser.updatedAt,
+    subscriberCount,
+    subscribedToCount,
+    videoCount,
+    isSubscribed,
+  };
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "Channel profile fetched successfully", channelProfile));
+};
+
+
+
 export {
   getCurrentUser,
   updateAccountInfo,
@@ -226,4 +284,5 @@ export {
   updateCoverImage,
   deleteAvatar,
   deleteCoverImage,
+  getUserChannelProfile
 };

@@ -11,3 +11,18 @@ export const userLoginSchema = z.object({
   email: z.string("Email is required").email("Please fill a valid email address"),
   password: z.string("Password is required").min(6, "Password must be at least 6 characters long").max(50, "Password must be at most 50 characters long"),
 });
+
+
+export const userResetPasswordSchema = z.object({
+  password: z
+    .string("Password is required")
+    .min(6, "Password must be at least 6 characters long")
+    .max(50, "Password must be at most 50 characters long"),
+  confirmPassword: z
+    .string("Confirm password is required")
+    .min(6, "Confirm password must be at least 6 characters long")
+    .max(50, "Confirm password must be at most 50 characters long"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"], // This ensures the error shows up on the confirmPassword field
+});

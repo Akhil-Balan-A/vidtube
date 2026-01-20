@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose";
+import crypto from "crypto";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { config } from "../config/config.js";
@@ -35,6 +36,14 @@ const userSchema = new Schema({
         type: Boolean,
         default: false
     },
+    emailVerificationToken: {
+        type: String,
+        default: null
+    },
+    emailVerificationTokenExpiry: {
+        type: Date,
+        default: null
+    },
     avatar: {
         type: String, //cloudinary URL
         required: true
@@ -64,6 +73,14 @@ const userSchema = new Schema({
         minlength: [6, "Password must be at least 6 characters long"],
         maxlength: [60, "Password must be at most 60 characters long"],
         select: false // Hides password from default queries
+    },
+    forgotPasswordResetToken: {
+        type: String,
+        default: null
+    },
+    forgotPasswordResetTokenExpiry: {
+        type: Date,
+        default: null
     },
     refreshToken: {
         type: String,
@@ -95,6 +112,20 @@ userSchema.methods.generateAccessToken = function () {
 userSchema.methods.generateRefreshToken = function () {
     //long lived refresh token
     return jwt.sign({ id: this._id}, config.refreshTokenSecret, { expiresIn: config.refreshTokenExpiry });
+}
+
+userSchema.methods.generateEmailVerificationToken = function () {
+  const verificationToken = crypto.randomInt(100000, 999999).toString();
+  this.emailVerificationToken = verificationToken;// here we are setting the verification token in the user document
+  this.emailVerificationTokenExpiry = Date.now() + 3600000; // 1 hour
+  return verificationToken;
+}
+
+userSchema.methods.generateForgotPasswordResetToken = function(){
+    const resetToken = crypto.randomBytes(20).toString("hex");
+    this.forgotPasswordResetToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+    this.forgotPasswordResetTokenExpiry = Date.now() + 3600000; // 1 hour
+    return resetToken;
 }
 
 
