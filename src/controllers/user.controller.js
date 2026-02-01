@@ -1,19 +1,16 @@
-import { User } from "../models/user.models.js";
-import { Subscription } from "../models/subscription.mdoels.js";
-import { Video } from "../models/video.models.js";
-import { ApiResponse } from "../utils/ApiResponse.js";
-import { ApiError } from "../utils/ApiError.js";
-import { logger } from "../utils/logger.js";
-import {
-  uploadOnCloudinary,
-  deleteFromCloudinary,
-} from "../utils/cloudinary.js";
+import { User } from "#models";
+import { Subscription } from "#models";
+import { WatchHistory } from "#models";
+import { Video } from "#models";
+import { ApiResponse, ApiError, logger, uploadOnCloudinary, deleteFromCloudinary } from "#utils";
 
 const getCurrentUser = async (req, res) => {
   const user = await User.findById(req.user.id);
   if (!user) throw new ApiError(404, "User not found", "USER_NOT_FOUND");
   // get user details
-  return res.status(200).json(new ApiResponse(200, "User fetched successfully", user));
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "User fetched successfully", user));
 };
 const updateAccountInfo = async (req, res) => {
   // update user details like name,fullName,email
@@ -50,23 +47,19 @@ const updateAvatar = async (req, res) => {
   let user = null;
   let oldAvatar = null;
   let oldAvatarPublicId = null;
-  let newAvatarApplied = false
+  let newAvatarApplied = false;
 
   try {
     if (!avatarLocalPath)
       throw new ApiError(400, "Avatar is required", "AVATAR_REQUIRED");
     user = await User.findById(req.user.id);
-    if (!user)
-      throw new ApiError(404, "User not found", "USER_NOT_FOUND");
+    if (!user) throw new ApiError(404, "User not found", "USER_NOT_FOUND");
     // save old values for rollback
     oldAvatar = user.avatar;
     oldAvatarPublicId = user.avatarPublicId;
 
     //upload new avatar
-    avatarUpload = await uploadOnCloudinary(
-      avatarLocalPath,
-      "vidtube/avatar"
-    )
+    avatarUpload = await uploadOnCloudinary(avatarLocalPath, "vidtube/avatar");
     // Apply new values
     user.avatar = avatarUpload?.url;
     user.avatarPublicId = avatarUpload?.publicId;
@@ -78,7 +71,9 @@ const updateAvatar = async (req, res) => {
     }
 
     await user.save({ validateBeforeSave: false }); //will save only what is modified
-    return res.status(200).json(new ApiResponse(200, "Avatar updated successfully", { user }));
+    return res
+      .status(200)
+      .json(new ApiResponse(200, "Avatar updated successfully", { user }));
   } catch (error) {
     logger.error("❌ Error updating avatar:", error.message);
     // 1. Delete uploaded Cloudinary avatar if upload succeeded
@@ -87,7 +82,6 @@ const updateAvatar = async (req, res) => {
         await deleteFromCloudinary(avatarUpload.publicId);
       }
     } catch (cleanupErr) {
-      
       logger.error("❌ Cloudinary delete failed:", cleanupErr.message);
     }
 
@@ -101,8 +95,12 @@ const updateAvatar = async (req, res) => {
     } catch (rollbackErr) {
       logger.error("❌ Failed to rollback user data:", rollbackErr.message);
     }
-    throw new ApiError(500, "Error updating avatar", "UPDATE_AVATAR_ERROR", error);
-
+    throw new ApiError(
+      500,
+      "Error updating avatar",
+      "UPDATE_AVATAR_ERROR",
+      error
+    );
   }
 };
 
@@ -112,7 +110,7 @@ const updateCoverImage = async (req, res) => {
   let user = null;
   let oldCoverImage = null;
   let oldCoverImagePublicId = null;
-  let newImageApplied = false
+  let newImageApplied = false;
   try {
     if (!coverImageLocalPath)
       throw new ApiError(
@@ -148,7 +146,6 @@ const updateCoverImage = async (req, res) => {
     // console.log("❌ Error in updateCoverImage:", error.message)
     logger.error("❌ Error in updateCoverImage:", error.message);
 
-
     // Cleanup block (delete cloud + local)
     try {
       if (coverUpload?.publicId) {
@@ -163,7 +160,6 @@ const updateCoverImage = async (req, res) => {
         user.coverImage = oldCoverImage;
         user.coverImagePublicId = oldCoverImagePublicId;
         await user.save({ validateBeforeSave: false });
-
       }
     } catch (rollbackErr) {
       logger.error("❌ Failed to rollback user data:", rollbackErr.message);
@@ -175,10 +171,7 @@ const updateCoverImage = async (req, res) => {
       error
     );
   }
-
 };
-
-
 
 const deleteAvatar = async (req, res) => {
   const user = await User.findById(req.user.id);
@@ -201,7 +194,6 @@ const deleteAvatar = async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, "Avatar image deleted successfully"));
 };
-
 
 const deleteCoverImage = async (req, res) => {
   const user = await User.findById(req.user.id);
@@ -233,14 +225,94 @@ const getUserChannelProfile = async (req, res) => {
     throw new ApiError(404, "Channel not found", "CHANNEL_NOT_FOUND");
   }
 
-  // Get subscriber count
+  /*
+  const channelProfile = await User.aggregate([
+  // Match the channel user
+  { $match: { _id: new mongoose.Types.ObjectId(id) } },
+  
+  // Lookup subscribers (users who subscribed to this channel)
+  {
+    $lookup: {
+      from: "subscriptions",
+      localField: "_id",
+      foreignField: "channel",
+      as: "subscribers"
+    }
+  },
+  
+  // Lookup subscribed channels (channels this user subscribed to)
+  {
+    $lookup: {
+      from: "subscriptions",
+      localField: "_id",
+      foreignField: "subscriber",
+      as: "subscribedChannels"
+    }
+  },
+  
+  // Lookup videos
+  {
+    $lookup: {
+      from: "videos",
+      let: { userId: "$_id" },
+      pipeline: [
+        {
+          $match: {
+            $expr: {
+              $and: [
+                { $eq: ["$owner", "$$userId"] },
+                { $eq: ["$isPublished", true] }
+              ]
+            }
+          }
+        }
+      ],
+      as: "videos"
+    }
+  },
+  
+  // Add computed fields
+  {
+    $addFields: {
+      subscriberCount: { $size: "$subscribers" },
+      subscribedToCount: { $size: "$subscribedChannels" },
+      videoCount: { $size: "$videos" }
+    }
+  },
+  
+  // Project only needed fields
+  {
+    $project: {
+      username: 1,
+      fullName: 1,
+      email: 1,
+      avatar: 1,
+      coverImage: 1,
+      isEmailVerified: 1,
+      createdAt: 1,
+      updatedAt: 1,
+      subscriberCount: 1,
+      subscribedToCount: 1,
+      videoCount: 1
+    }
+  }
+]);
+  
+  */
+
+  // channel i subcribed.
   const subscriberCount = await Subscription.countDocuments({ channel: id });
 
-  // Get subscribed to count
-  const subscribedToCount = await Subscription.countDocuments({ subscriber: id });
+  // channels that subcribe to this channel.
+  const subscribedToCount = await Subscription.countDocuments({
+    subscriber: id,
+  });
 
-  // Get video count (published videos)
-  const videoCount = await Video.countDocuments({ owner: id, isPublished: true });
+  // videos of this channel.
+  const videoCount = await Video.countDocuments({
+    owner: id,
+    isPublished: true,
+  });
 
   // Check if current user is subscribed to this channel
   let isSubscribed = false;
@@ -271,10 +343,45 @@ const getUserChannelProfile = async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, "Channel profile fetched successfully", channelProfile));
+    .json(
+      new ApiResponse(
+        200,
+        "Channel profile fetched successfully",
+        channelProfile
+      )
+    );
 };
 
 
+const getWatchHistory= async (req, res) => {
+  const { page = 1, limit = 10 } = req.query;
+
+  const watchHistory = await WatchHistory.find({ user: req.user.id })
+    .populate({
+      path: "video",
+      populate: {
+        path: "owner",
+        select: "username fullName avatar",
+      },
+    })
+    .sort({ watchedAt: -1 })
+    .skip((page - 1) * limit)
+    .limit(parseInt(limit));
+
+  const totalCount = await WatchHistory.countDocuments({ user: req.user.id });
+
+  return res.status(200).json(
+    new ApiResponse(200, "Watch history fetched successfully", {
+      watchHistory,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(totalCount / limit),
+        totalItems: totalCount,
+        itemsPerPage: parseInt(limit),
+      },
+    })
+  );
+};
 
 export {
   getCurrentUser,
@@ -284,5 +391,6 @@ export {
   updateCoverImage,
   deleteAvatar,
   deleteCoverImage,
-  getUserChannelProfile
+  getUserChannelProfile,
+  getWatchHistory,
 };

@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-import { config } from "../config/config.js"
-import { ApiError } from "../utils/ApiError.js";
+import {config} from "#config";
+import { ApiError } from "#utils";
 import multer from "multer";
 
 

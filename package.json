@@ -4,6 +4,15 @@
   "description": "Project inspired by Youtube",
   "main": "src/index.js",
   "type": "module",
+  "imports": {
+    "#config": "./src/config/index.js",
+    "#controllers": "./src/controllers/index.js",
+    "#middlewares": "./src/middlewares/index.js",
+    "#models": "./src/models/index.js",
+    "#routes": "./src/routes/index.js",
+    "#utils": "./src/utils/index.js",
+    "#validators": "./src/validators/index.js"
+},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "devStart": "nodemon src/index.js"

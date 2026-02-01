@@ -2,7 +2,8 @@ import mongoose, { Schema } from "mongoose";
 import crypto from "crypto";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { config } from "../config/config.js";
+import {config} from "#config";
+
 
 const userSchema = new Schema({
     username: {
@@ -60,13 +61,7 @@ const userSchema = new Schema({
         type: String,
         default: null
     },
-    watchHistory: [
-        {
-            type: Schema.Types.ObjectId,
-            ref: "Video"
-
-        }
-    ],
+ 
     password: {
         type: String,
         required: [true, "Password is required"],

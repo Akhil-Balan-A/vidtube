@@ -48,14 +48,14 @@ const commentSchema = new Schema(
 commentSchema.plugin(mongooseAggregatePaginate);
 
 // Only one target allowed (video OR tweet OR parentComment)
-commentSchema.pre("save", function (next) {
+commentSchema.pre("save", function () {
   const targets = [this.video, this.tweet, this.parentComment].filter(Boolean);
   if (targets.length !== 1) {
     return next(
       new Error("Comment must belong to exactly one target (video/tweet/comment).")
     );
   }
-  next();
+
 });
 
 // Useful index for performance

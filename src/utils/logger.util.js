@@ -2,8 +2,9 @@ import pino from "pino";
 // Import the Pino logging library.  
 // Pino is a fast, modern logger recommended for scalable applications.
 
-import { config } from "../config/config.js";  
+import { config } from "#config";
 // Import your centralized configuration loader.
+
 // This gives you access to NODE_ENV (development or production).
 
 

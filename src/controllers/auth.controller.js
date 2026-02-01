@@ -1,18 +1,19 @@
 import mongoose from "mongoose";
-import { User } from "../models/user.models.js";
-import { ApiResponse } from "../utils/ApiResponse.js";
-import { ApiError } from "../utils/ApiError.js";
+import { User } from "#models";
 import jwt from "jsonwebtoken";
 import fs from "fs";
-import { config } from "../config/config.js";
+import { config } from "#config";
 import crypto from "crypto";
-import { logger } from "../utils/logger.js";
 import {
   uploadOnCloudinary,
   deleteFromCloudinary,
-} from "../utils/cloudinary.js";
-import { setAuthCookies } from "../utils/cookie.js";
-import { sendWelcomeEmail, sendForgotPasswordResetEmail } from "../utils/sendEmail.js";
+  setAuthCookies,
+  sendWelcomeEmail,
+  sendForgotPasswordResetEmail,
+  ApiResponse,
+  ApiError,
+  logger
+} from "#utils";
 
 
 const generateAccessAndRefreshToken = async (userId) => {
@@ -58,7 +59,7 @@ const registerUser = async (req, res) => {
     if (coverImageLocalPath) {
       coverUpload = await uploadOnCloudinary(
         coverImageLocalPath,
-        "vidtube/coverImages"
+        "vidtube/coverImage"
       );
     }
 
