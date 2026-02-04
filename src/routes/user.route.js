@@ -19,45 +19,45 @@ import {
   userUpdateAccountInfoSchema,
 } from "#validators";
 
-const userRouter = Router();
+const router = Router();
 
-userRouter
+router
   .route("/change-password")
   .patch(
     verifyJWT,
     validate(userChangePasswordSchema),
     asyncHandler(changeCurrentPassword)
   );
-userRouter.route("/me").get(verifyJWT, asyncHandler(getCurrentUser));
-userRouter
+router.route("/me").get(verifyJWT, asyncHandler(getCurrentUser));
+router
   .route("/update-account-info")
   .patch(
     verifyJWT,
     validate(userUpdateAccountInfoSchema),
     asyncHandler(updateAccountInfo)
   );
-userRouter
+router
   .route("/update-avatar")
   .patch(
     verifyJWT,
     upload.fields([{ name: "avatar", maxCount: 1 }]),
     asyncHandler(updateAvatar)
   );
-userRouter
+router
   .route("/update-cover-image")
   .patch(
     verifyJWT,
     upload.fields([{ name: "coverImage", maxCount: 1 }]),
     asyncHandler(updateCoverImage)
   );
-userRouter
+router
   .route("/delete-cover")
   .delete(verifyJWT, asyncHandler(deleteCoverImage));
-userRouter
+router
   .route("/delete-avatar")
   .delete(verifyJWT, asyncHandler(deleteAvatar));
-userRouter.route("/channel/:id").get(asyncHandler(getUserChannelProfile));
-userRouter
+router.route("/channel/:id").get(asyncHandler(getUserChannelProfile));
+router
   .route("/watch-history")
   .get(verifyJWT, asyncHandler(getWatchHistory));
-export default userRouter;
+export default router;

@@ -114,7 +114,7 @@ const registerUser = async (req, res) => {
 
     //Delete uploaded avatar if failure happens after uploading
     if (avatarUpload?.publicId) {
-      await deleteFromCloudinary(avatarUpload.publicId);
+      await deleteFromCloudinary(avatarUpload.publicId,);
     }
 
     // Delete uploaded cover if failure happens after uploading

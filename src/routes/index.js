@@ -3,3 +3,5 @@ export { default as userRouter } from "./user.route.js";
 export { default as videoRouter } from "./video.route.js";
 export { default as healthCheckRouter } from "./healthCheck.route.js";
 export { default as commentRouter } from "./comment.route.js";
+export { default as likeRouter } from "./like.route.js";
+export { default as tweetRouter } from "./tweet.route.js";

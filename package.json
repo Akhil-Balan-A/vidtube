@@ -12,7 +12,7 @@
     "#routes": "./src/routes/index.js",
     "#utils": "./src/utils/index.js",
     "#validators": "./src/validators/index.js"
-},
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "devStart": "nodemon src/index.js"

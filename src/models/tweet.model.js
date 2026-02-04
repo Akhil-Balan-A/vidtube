@@ -1,13 +1,14 @@
 import mongoose, { Schema } from "mongoose";
+import { ApiError } from "#utils";
 
 const tweetSchema = new Schema(
   {
     content: {
       type: String,
-      required: true,
+      required: false, // Can be null if image is present
       trim: true,
       minlength: 1,
-      maxlength: 280 // classic tweet style, can increase to 4000 if needed
+      maxlength: 3000 // classic tweet style, can increase to 4000 if needed
     },
 
     author: {
@@ -16,12 +17,19 @@ const tweetSchema = new Schema(
       required: true,
       index: true
     },
-
-    media: [
-      {
-        type: String // URLs to images/videos (cloudinary/S3)
-      }
-    ],
+    image:{
+      type:String,//Coudinary URL
+    },
+    imagePublicId:{
+      type:String,//Cloudinary public ID for deletion
+    },
+    parentTweet:{
+      type: Schema.Types.ObjectId,
+      ref: "Tweet",
+      default:null,
+      index:true
+    },
+    //soft delete
     isDeleted: {
       type: Boolean,
       default: false
@@ -32,7 +40,10 @@ const tweetSchema = new Schema(
   }
 );
 
-// Useful indexing
-tweetSchema.index({ author: 1 });
+tweetSchema.pre("save", function(){
+  if(!this.content && !this.image){
+    throw new ApiError(400, "Tweet must have content or image", "INVALID_TWEET");
+  }
+})
 
 export const Tweet = mongoose.model("Tweet", tweetSchema);

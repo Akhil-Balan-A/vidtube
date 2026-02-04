@@ -1,52 +1,36 @@
-import mongoose, { Schema } from "mongoose";
-import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
+import mongoose from "mongoose";
 
-
-const likeSchema = new Schema(
+const likeSchema = new mongoose.Schema(
   {
-    likedBy: {
-      type: Schema.Types.ObjectId,
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true
+      required: true,
     },
 
-    // polymorphic target: only one should be filled
-    video: {
-      type: Schema.Types.ObjectId,
-      ref: "Video"
+    targetType: {
+      type: String,
+      enum: ["Video", "Comment", "Tweet"],
+      required: true,
     },
-    comment: {
-      type: Schema.Types.ObjectId,
-      ref: "Comment"
+
+    targetId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      refPath: "targetType",
     },
-    tweet: {
-      type: Schema.Types.ObjectId,
-      ref: "Tweet"
-    }
+
+    action: {
+      type: String,
+      enum: ["like", "dislike"],
+      required: true,
+    },
   },
-  {
-    timestamps: true
-  }
+  { timestamps: true }
 );
 
-likeSchema.plugin(mongooseAggregatePaginate);
+// One reaction per user per target
+likeSchema.index({ user: 1, targetType: 1, targetId: 1 }, { unique: true });
 
-// Ensure exactly ONE target is selected
-likeSchema.pre("save", function (next) {
-  const targets = [this.video, this.comment, this.tweet].filter(Boolean);
-
-  if (targets.length !== 1) {
-    return next(
-      new Error("Like must belong to exactly one target (video/comment/tweet).")
-    );
-  }
-
-  next();
-});
-
-// Prevent double-like on same target
-likeSchema.index({ likedBy: 1, video: 1 }, { unique: true, sparse: true });
-likeSchema.index({ likedBy: 1, comment: 1 }, { unique: true, sparse: true });
-likeSchema.index({ likedBy: 1, tweet: 1 }, { unique: true, sparse: true });
 
 export const Like = mongoose.model("Like", likeSchema);

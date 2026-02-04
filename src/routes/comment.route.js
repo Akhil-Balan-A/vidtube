@@ -1,35 +1,26 @@
 import { Router } from "express";
-// import {
-//   addComment,
-//   deleteComment,
-//   getVideoComments,
-//   updateComment,
-// } from "../controllers/comment.controller.js";
-import {addComment,updateComment} from "#controllers"
-import { verifyJWT, optionalVerifyJWT } from "#middlewares";    
+
+import {
+  addComment,
+  updateComment,
+  deleteComment,
+  getVideoComments,
+} from "#controllers";
+import { verifyJWT } from "#middlewares";    
 import { asyncHandler } from "#utils";
 import { validate } from "#middlewares";
 import { commentSchema, updateCommentSchema } from "#validators";
 
-const commentRouter = Router();
+const router = Router();
 
 //Route for video comments
-commentRouter.route("/add/:videoId").post(verifyJWT,validate(commentSchema),asyncHandler(addComment));
+router.route("/:videoId").post(verifyJWT,validate(commentSchema),asyncHandler(addComment));
 
-commentRouter.route("/update/:commentId").patch(verifyJWT,validate(updateCommentSchema),asyncHandler(updateComment));
+router.route("/:commentId").patch(verifyJWT,validate(updateCommentSchema),asyncHandler(updateComment));
 
-// // Routes for video comments
-// // GET /api/v1/comments/:videoId - Get all comments for a video (Public/Optional Auth for user-specific data like 'isLiked' in future)
-// router.route("/:videoId").get(optionalVerifyJWT, getVideoComments);
+router.route("/:commentId").delete(verifyJWT,asyncHandler(deleteComment));
 
-// // POST /api/v1/comments/:videoId - Add a comment to a video (Auth required)
-// router.route("/:videoId").post(verifyJWT, addComment);
+router.route("/:videoId").get(asyncHandler(getVideoComments)); // video commment can be seen by anyone
 
-// // Routes for individual comments
-// // DELETE /api/v1/comments/c/:commentId - Delete a comment (Auth required)
-// router.route("/c/:commentId").delete(verifyJWT, deleteComment);
 
-// // PATCH /api/v1/comments/c/:commentId - Update a comment (Auth required)
-// router.route("/c/:commentId").patch(verifyJWT, updateComment);
-
-export default commentRouter;
+export default router;

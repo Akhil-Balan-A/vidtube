@@ -16,9 +16,9 @@ import {
 } from "#validators";
 import { Router } from "express";
 
-const videoRouter = Router();
+const router = Router();
 
-videoRouter.route("/upload").post(
+router.route("/upload").post(
   verifyJWT,
   upload.fields([
     {
@@ -34,9 +34,9 @@ videoRouter.route("/upload").post(
   asyncHandler(uploadVideo)
 );
 
-videoRouter.route("/").get(asyncHandler(getAllVideos));
-videoRouter.route("/:id").get(optionalVerifyJWT, asyncHandler(viewVideo));
-videoRouter
+router.route("/").get(asyncHandler(getAllVideos));
+router.route("/:id").get(optionalVerifyJWT, asyncHandler(viewVideo));
+router
   .route("/update/:id")
   .patch(
     verifyJWT,
@@ -45,9 +45,9 @@ videoRouter
     asyncHandler(updateVideo)
   );
 
-videoRouter.route("/delete/:id").delete(verifyJWT, asyncHandler(deleteVideo));
-videoRouter
+router.route("/delete/:id").delete(verifyJWT, asyncHandler(deleteVideo));
+router
   .route("/toggle-publish/:id")
   .patch(verifyJWT, asyncHandler(togglePublishStatus));
 
-export default videoRouter;
+export default router;
