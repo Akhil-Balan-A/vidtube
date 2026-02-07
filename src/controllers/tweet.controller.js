@@ -80,22 +80,24 @@ export const createTweet = async (req, res) => {
 // get tweets of a particular user (include main tweets and replies) unprotected route
 export const getUserTweets = async (req, res) => {
   const { userId } = req.params;
-  const { page = 1, limit = 10 } = req.query;
+  const { page = 1, limit = 10 } = req.query; // in url we put like ?page=2&limit=5 if needed,else it will take default values.
+
   const tweets = await Tweet.find({ author: userId, isDeleted: false })
     .populate("author", "username")
     .populate("parentTweet", "content author")
     .sort({ createdAt: -1 })
-    .limit(limit * 1)
-    .skip((page - 1) * limit);
+    .limit(limit * 1)// limit is multiplied by 1 just to make it number as query values are strings.
+    .skip((page - 1) * limit);// skip is used for pagination. where user want to skip pages.. e.g: if user want to  view the 3rd page then it will skp the first 2 pages where 20 tweets are there.
+    // skip((3-1)*10) = 20
 
   const totalTweets = await Tweet.countDocuments({
     author: userId,
     isDeleted: false,
   });
-  const totalPages = Math.ceil(totalTweets / limit);
-  const hasMore = page < totalPages;
-  const nextPage = page + 1 > totalPages ? null : page + 1;
-  const prevPage = page - 1 < 1 ? null : page - 1;
+  const totalPages = Math.ceil(totalTweets / limit);// if 21 tweets are there and limit is 10 then ceil will make 2.1 to 3 pages.e.g: 21/10 = 2.1 -> 3
+  const hasMore = page < totalPages;// if page is 1 and totalPages is 3 then hasMore will be true.
+  const nextPage = page + 1 > totalPages ? null : page + 1;// if page is 1 and totalPages is 3 then nextPage will be 2.
+  const prevPage = page - 1 < 1 ? null : page - 1;// if page is 1 and totalPages is 3 then prevPage will be null.
   const data = {
     tweets,
     totalTweets,

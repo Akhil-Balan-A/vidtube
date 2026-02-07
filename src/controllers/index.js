@@ -5,5 +5,6 @@ export * from "./video.controller.js";
 export * from "./comment.controller.js";
 export * from "./like.controller.js";
 export * from "./tweet.controller.js";
+export * from "./watchHistory.controller.js";
 
 
