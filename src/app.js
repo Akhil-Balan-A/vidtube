@@ -34,7 +34,7 @@ app.use(morgan("tiny", {
 logger.info("Server started");
 
 //import routes
-import {healthCheckRouter,authRouter,userRouter,videoRouter,commentRouter,likeRouter,tweetRouter,watchHistoryRouter} from "#routes";
+import {healthCheckRouter,authRouter,userRouter,videoRouter,commentRouter,likeRouter,tweetRouter,watchHistoryRouter,playlistRouter,subscriptionRouter} from "#routes";
 
 //Routes
 app.use("/api/v1/healthcheck", healthCheckRouter);
@@ -44,7 +44,9 @@ app.use("/api/v1/videos", videoRouter);
 app.use("/api/v1/comments", commentRouter);
 app.use("/api/v1/likes", likeRouter);
 app.use("/api/v1/tweets", tweetRouter);
-app.use("/api/v1/watchHistory", watchHistoryRouter);
+app.use("/api/v1/watch-history", watchHistoryRouter);
+app.use("/api/v1/playlists", playlistRouter);
+app.use("/api/v1/subscriptions", subscriptionRouter);
 
 //Global error handler
 app.use(errorHandler);

@@ -6,5 +6,7 @@ export * from "./comment.controller.js";
 export * from "./like.controller.js";
 export * from "./tweet.controller.js";
 export * from "./watchHistory.controller.js";
+export * from "./playlist.controller.js";
+export * from "./subscription.controller.js";
 
 

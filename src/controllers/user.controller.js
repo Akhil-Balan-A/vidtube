@@ -353,36 +353,6 @@ const getUserChannelProfile = async (req, res) => {
 };
 
 
-const getWatchHistory= async (req, res) => {
-  const { page = 1, limit = 10 } = req.query;
-
-  const watchHistory = await WatchHistory.find({ user: req.user.id })
-    .populate({
-      path: "video",
-      populate: {
-        path: "owner",
-        select: "username fullName avatar",
-      },
-    })
-    .sort({ watchedAt: -1 })
-    .skip((page - 1) * limit)
-    .limit(parseInt(limit));
-
-  const totalCount = await WatchHistory.countDocuments({ user: req.user.id });
-
-  return res.status(200).json(
-    new ApiResponse(200, "Watch history fetched successfully", {
-      watchHistory,
-      pagination: {
-        currentPage: parseInt(page),
-        totalPages: Math.ceil(totalCount / limit),
-        totalItems: totalCount,
-        itemsPerPage: parseInt(limit),
-      },
-    })
-  );
-};
-
 export {
   getCurrentUser,
   updateAccountInfo,
@@ -392,5 +362,5 @@ export {
   deleteAvatar,
   deleteCoverImage,
   getUserChannelProfile,
-  getWatchHistory,
+  
 };

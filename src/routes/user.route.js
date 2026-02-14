@@ -9,7 +9,7 @@ import {
   deleteAvatar,
   deleteCoverImage,
   getUserChannelProfile,
-  getWatchHistory,
+  
 } from "../controllers/user.controller.js";
 import { asyncHandler } from "#utils";
 import { verifyJWT } from "#middlewares";
@@ -57,7 +57,5 @@ router
   .route("/delete-avatar")
   .delete(verifyJWT, asyncHandler(deleteAvatar));
 router.route("/channel/:id").get(asyncHandler(getUserChannelProfile));
-router
-  .route("/watch-history")
-  .get(verifyJWT, asyncHandler(getWatchHistory));
+
 export default router;

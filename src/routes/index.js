@@ -6,3 +6,5 @@ export { default as commentRouter } from "./comment.route.js";
 export { default as likeRouter } from "./like.route.js";
 export { default as tweetRouter } from "./tweet.route.js";
 export { default as watchHistoryRouter } from "./watchHistory.route.js";
+export { default as playlistRouter } from "./playlist.route.js";
+export { default as subscriptionRouter } from "./subscription.route.js";

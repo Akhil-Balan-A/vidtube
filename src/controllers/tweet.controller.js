@@ -137,6 +137,9 @@ export const updateTweet = async (req, res) => {
 
   try {
     // For replies, only content can be updated
+    // rule A: root tweet will have content or image
+    // rulte B: reply tweet will have only content no images allwoed
+    // only reply tweet will have parentTweet field. For root tweet it will be null.
     if (tweet.parentTweet && imageLocalPath) {
       throw new ApiError(
         400,
@@ -193,7 +196,7 @@ export const updateTweet = async (req, res) => {
 
 export const deleteTweet = async (req, res) => {
   const userId = req.user.id;
-  const { tweetId } = req.params;
+  const { tweetId } = req.params;//here get shared the id of tweet or reply to be deleted.
 
   const tweet = await Tweet.findById(tweetId);
   if (!tweet || tweet.isDeleted) {
@@ -201,7 +204,7 @@ export const deleteTweet = async (req, res) => {
   }
 
   // Authorization: Owner can delete their tweet, or tweet owner can delete replies on their tweet if find it uncomfortable
-
+  
   // Case 1: Author deleting own tweet or reply tweet
   if (tweet.author.toString() === userId) {
     tweet.isDeleted = true;
@@ -212,11 +215,27 @@ export const deleteTweet = async (req, res) => {
       .json(new ApiResponse(200, "Tweet deleted successfully", {}));
   }
 
-  // Case 2: Author deleting a reply on their tweet by others
+  // Case 2: Author deleting a reply (or nested reply) on their tweet thread by others
+  
+  // We need to traverse up the parent chain to find the root tweet
   if (tweet.parentTweet) {
-    const parent = await Tweet.findById(tweet.parentTweet);
+    let currentTweet = tweet;
+    let rootTweet = null;
 
-    if (parent && parent.author.toString() === userId) {
+    // Traverse up to find the root tweet (the one without a parent)
+    while (currentTweet.parentTweet) {
+      const parent = await Tweet.findById(currentTweet.parentTweet);
+      if (!parent) {
+        throw new ApiError(404, "Parent tweet not found", "PARENT_NOT_FOUND");
+      }
+      currentTweet = parent;
+    }
+    
+    // Now currentTweet is the root tweet
+    rootTweet = currentTweet;
+
+    // Check if the logged-in user is the author of the root tweet
+    if (rootTweet.author.toString() === userId) {
       tweet.isDeleted = true;
       await tweet.save();
 

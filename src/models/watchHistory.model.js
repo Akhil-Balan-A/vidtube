@@ -19,31 +19,11 @@ const watchHistorySchema = new Schema(
       default: Date.now,
       index: true,
     },
-    watchDuration: {
-      // How long the user watched (in seconds)
-      type: Number,
-      default: 0,
-    },
-    watchProgress: {
-      // Percentage of video watched (0-100)
-      type: Number,
-      default: 0,
-      min: 0,
-      max: 100,
-    },
-    completed: {
-      // Whether the user completed watching the video
-      type: Boolean,
-      default: false,
-    },
   },
   {
     timestamps: true,
   }
 );
-
-// Compound index for efficient queries (get user's watch history sorted by time)
-watchHistorySchema.index({ user: 1, watchedAt: -1 });
 
 // Prevent duplicate entries for same user-video combination
 // Also makes queries like "has user watched this video?" very fast

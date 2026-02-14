@@ -4,3 +4,5 @@ export * from "./video.validator.js";
 export * from "./comment.validator.js";
 export * from "./like.validator.js";
 export * from "./tweet.validator.js";
+export * from "./playlist.validator.js";
+

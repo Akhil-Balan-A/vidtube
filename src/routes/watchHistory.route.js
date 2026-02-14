@@ -1,17 +1,19 @@
 import express from "express";
-import { addToWatchHistory, clearWatchHistory, getWatchHistory, removeFromWatchHistory } from "#controllers";
+import { addToWatchHistory, getWatchHistory, removeFromWatchHistory, clearWatchHistory } from "#controllers";
 import { asyncHandler } from "#utils";
-import { validate } from "#middlewares";
 import { verifyJWT } from "#middlewares";
-import { watchHistoryValidator } from "#validators";
 
 const router = express.Router();
 
+router.use(verifyJWT);
 
-router.post("/", verifyJWT, validate(watchHistoryValidator), asyncHandler(addToWatchHistory));
-router.get("/", verifyJWT, validate(watchHistoryValidator), asyncHandler(getWatchHistory));
-router.delete("/", verifyJWT, validate(watchHistoryValidator), asyncHandler(removeFromWatchHistory));
-router.delete("/clear", verifyJWT, validate(watchHistoryValidator), asyncHandler(clearWatchHistory));
+// Specific routes first
+router.route("/clear").delete(verifyJWT, asyncHandler(clearWatchHistory));
+router.route("/").get(verifyJWT, asyncHandler(getWatchHistory));
 
+// Parameterized routes last
+router.route("/:videoId")
+    .post(verifyJWT, asyncHandler(addToWatchHistory))
+    .delete(verifyJWT, asyncHandler(removeFromWatchHistory));
 
 export default router;

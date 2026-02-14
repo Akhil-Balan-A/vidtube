@@ -42,6 +42,7 @@ const uploadVideo = async (req, res) => {
       isPublished,
       publicId: videoUpload.publicId,
       thumbnailPublicId: thumbnailUpload?.publicId || null,
+      duration: videoUpload.duration || 0,
     });
 
     //return response
